@@ -1,6 +1,7 @@
 import pygame as pg
 import sys,time
 from bird import Bird
+from pipe import Pipe
 #for the startar
 
 pg.init()
@@ -16,6 +17,8 @@ class Game:
         self.move_speed=250
         self.bird=Bird(self.scale_factor)
         self.is_enter_pressed=False
+        self.pipes=[]
+        self.pip_generate_counter=71
         
         self.setUpBgAndGround()
         self.gameLoop()
@@ -47,6 +50,7 @@ class Game:
     
     def updateEverything(self,dt):
         if self.is_enter_pressed:
+            #moving the ground
             self.ground1_rect.x-=int(self.move_speed*dt)
             self.ground2_rect.x-=int(self.move_speed*dt)
 
@@ -55,10 +59,28 @@ class Game:
             if self.ground2_rect.right<0:
                 self.ground2_rect.x=self.ground1_rect.right
 
+            #generating pipes
+            if self.pip_generate_counter>70:
+                self.pipes.append(Pipe(self.scale_factor,self.move_speed))
+                self.pip_generate_counter=0
+            self.pip_generate_counter+=1
+
+            #moving the pipes
+            for pipe in self.pipes:
+                pipe.update(dt)
+
+            #removing pipes if out of screen
+            if len(self.pipes)!=0:
+                if self.pipes[0].rect_up.right<0:
+                    self.pipes.pop(0)
+
+            #moving the bird
             self.bird.update(dt)
         
     def drawEverything(self):
         self.win.blit(self.bg_img,(0,-300))    #blit() is used for diplaying text,img etc.
+        for pipe in self.pipes:
+            pipe.drawPipe(self.win)
         self.win.blit(self.ground1_img,self.ground1_rect)
         self.win.blit(self.ground2_img,self.ground2_rect)
         self.win.blit(self.bird.image,self.bird.rect)
