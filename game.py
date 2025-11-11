@@ -16,9 +16,21 @@ class Game:
         self.clock=pg.time.Clock()
         self.move_speed=250
         self.bird=Bird(self.scale_factor)
+        self.score=0
+        self.font=pg.font.Font("assets/font.ttf",24)
+        self.score_text=self.font.render("score: 0",True,(255,255,255))
+        self.score_text_rect=self.score_text.get_rect(center=(100,30))
+
+        self.highScore_text=self.font.render("High Score: 0",True,(255,255,255))
+        self.highScore_text_rect=self.highScore_text.get_rect(center=(200,30))
+
+        self.restart_text=self.font.render("Restart",True,(255,255,255))
+        self.restart_text_rect=self.restart_text.get_rect(center=(300,700))
         self.is_enter_pressed=False
+        self.is_game_started=True
         self.pipes=[]
         self.pip_generate_counter=71
+        self.start_monitoring=False
         
         self.setUpBgAndGround()
         self.gameLoop()
@@ -36,18 +48,57 @@ class Game:
                 if event.type == pg.QUIT:
                     pg.quit()
                     sys.exit()
-                if event.type==pg.KEYDOWN:
+                if event.type==pg.KEYDOWN and self.is_game_started:
                     if event.key==pg.K_RETURN:
                         self.is_enter_pressed=True
+                        self.bird.update_on=True
                     if event.key==pg.K_SPACE and self.is_enter_pressed:
                         self.bird.flap(dt)
+                if event.type==pg.MOUSEBUTTONUP:
+                     if self.restart_text_rect.collidepoint(pg.mouse.get_pos()):
+                        self.restartGame()
 
             self.updateEverything(dt)
+            self.checkCollisions()
+            self.checkScore()
             self.drawEverything()
             pg.display.update()
             self.clock.tick(60) #for 60 fps 
 
-    
+    def restartGame(self):
+        self.score=0
+        self.score_text=self.font.render("Score: 0",True,(255,255,255))
+        self.is_game_started=True
+        self.is_enter_pressed=False
+        self.bird.resetPosition()
+        self.pipes.clear()
+        self.pip_generate_counter=71
+        self.bird.update_on=False
+
+
+    def checkScore(self):
+        if len(self.pipes)>0:
+            if (self.bird.rect.left > self.pipes[0].rect_down.left and self.bird.rect.right < self.pipes[0].rect_down.right and not self.start_monitoring):
+                self.start_monitoring=True
+            if self.bird.rect.left > self.pipes[0].rect_down.right and self.start_monitoring:
+                self.start_monitoring=False
+                self.score+=1
+                self.score_text=self.font.render(f"Score: {self.score}",True,(255,255,255))
+                self.highScore_text=self.font.render(f"High Score: {self.score}",True,(255,255,255))
+
+
+    def checkCollisions(self):
+        if len(self.pipes):
+            if self.bird.rect.bottom>568:
+                self.bird.update_on=False
+                self.is_enter_pressed=False
+                self.is_enter_pressed=False
+            if (self.bird.rect.colliderect(self.pipes[0].rect_down) or 
+            self.bird.rect.colliderect(self.pipes[0].rect_up)):
+
+                self.is_enter_pressed=False
+                self.is_game_started=False
+
     def updateEverything(self,dt):
         if self.is_enter_pressed:
             #moving the ground
@@ -75,7 +126,7 @@ class Game:
                     self.pipes.pop(0)
 
             #moving the bird
-            self.bird.update(dt)
+        self.bird.update(dt)
         
     def drawEverything(self):
         self.win.blit(self.bg_img,(0,-300))    #blit() is used for diplaying text,img etc.
@@ -84,6 +135,10 @@ class Game:
         self.win.blit(self.ground1_img,self.ground1_rect)
         self.win.blit(self.ground2_img,self.ground2_rect)
         self.win.blit(self.bird.image,self.bird.rect)
+        self.win.blit(self.score_text,self.score_text_rect)
+        if not self.is_game_started:
+            self.win.blit(self.restart_text,self.restart_text_rect)
+            
 
 
     def setUpBgAndGround(self):

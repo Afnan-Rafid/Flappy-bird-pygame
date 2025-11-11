@@ -13,20 +13,23 @@ class Bird(pg.sprite.Sprite):
         self.gravity=10
         self.flap_speed=250
         self.anim_counter=-0
+        self.update_on=False
 
     def update(self,dt):
-        self.playAnimation()
-        self.applyGravity(dt)
+        if self.update_on:
+            self.playAnimation()
+            self.applyGravity(dt)
 
-        if self.rect.y<=0 and self.flap_speed==250:
-            self.rect.y=0
-            self.flap_speed=0
-            self.y_velocity=0
-        elif self.rect.y>0 and self.flap_speed==0:
-            self.flap_speed=250
+            if self.rect.y<=0 and self.flap_speed==250:
+                self.rect.y=0
+                self.flap_speed=0
+                self.y_velocity=0
+            elif self.rect.y>0 and self.flap_speed==0:
+                self.flap_speed=250
 
 
     def applyGravity(self,dt):
+
         self.y_velocity+=self.gravity*dt
         self.rect.y+=self.y_velocity
 
@@ -41,5 +44,8 @@ class Bird(pg.sprite.Sprite):
             self.anim_counter=0
         
         self.anim_counter+=1
-
+    def resetPosition(self):
+        self.rect.center=(100,100)
+        self.y_velocity=0
+        self.anim_counter=0
 
