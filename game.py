@@ -22,7 +22,8 @@ class Game:
         self.score_text_rect=self.score_text.get_rect(center=(100,30))
 
         self.highScore_text=self.font.render("High Score: 0",True,(255,255,255))
-        self.highScore_text_rect=self.highScore_text.get_rect(center=(200,30))
+        self.highScore_text_rect=self.highScore_text.get_rect(center=(350,30))
+        self.high_score=0
 
         self.restart_text=self.font.render("Restart",True,(255,255,255))
         self.restart_text_rect=self.restart_text.get_rect(center=(300,700))
@@ -80,11 +81,17 @@ class Game:
         if len(self.pipes)>0:
             if (self.bird.rect.left > self.pipes[0].rect_down.left and self.bird.rect.right < self.pipes[0].rect_down.right and not self.start_monitoring):
                 self.start_monitoring=True
+                
             if self.bird.rect.left > self.pipes[0].rect_down.right and self.start_monitoring:
                 self.start_monitoring=False
                 self.score+=1
                 self.score_text=self.font.render(f"Score: {self.score}",True,(255,255,255))
-                self.highScore_text=self.font.render(f"High Score: {self.score}",True,(255,255,255))
+
+                if self.score>self.high_score:
+                    self.high_score = self.score
+                    self.highScore_text = self.font.render(f"High Score: {self.high_score}", True, (255,255,255))
+
+                
 
 
     def checkCollisions(self):
@@ -136,6 +143,7 @@ class Game:
         self.win.blit(self.ground2_img,self.ground2_rect)
         self.win.blit(self.bird.image,self.bird.rect)
         self.win.blit(self.score_text,self.score_text_rect)
+        self.win.blit(self.highScore_text,self.highScore_text_rect)
         if not self.is_game_started:
             self.win.blit(self.restart_text,self.restart_text_rect)
             
